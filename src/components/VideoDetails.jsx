@@ -7,6 +7,7 @@ import { abbreviateNumber } from "js-abbreviation-number";
 import SuggestionVideoCard from "./SuggestionVideoCard";
 import { fetchDataFromApi } from './../utils/api';
 import { Context } from './../context/contextapi';
+import { useCallback } from "react";
 
 
 
@@ -16,29 +17,31 @@ const VideoDetails = () => {
   const { id } = useParams();
   const { setLoading } = useContext(Context);
 
-  useEffect(() => {
-    //document.getElementById("root").classList.add("custom-h");
-    fetchVideoDetails();
-    fetchRelatedVideos();
-  }, [id]);
-
-  const fetchVideoDetails = () => {
+  const fetchVideoDetails = useCallback(() => {
     setLoading(true);
     fetchDataFromApi(`video/details/?id=${id}`).then((res) => {
       console.log(res);
       setVideo(res)
       setLoading(false)
     });
-  };
+  }, [id, setLoading]); // Include id and setLoading in the dependency array
 
-  const fetchRelatedVideos = () => {
+  
+  // Wrap fetchRelatedVideos with useCallback to ensure it's stable
+  const fetchRelatedVideos = useCallback(() => {
     setLoading(true);
     fetchDataFromApi(`video/related-contents/?id=${id}`).then((res) => {
       console.log(res);
       setRelatedVideos(res)
       setLoading(false)
     });
-  };
+  }, [id, setLoading]); // Include id and setLoading in the dependency array
+
+  useEffect(() => {
+    fetchVideoDetails();
+    fetchRelatedVideos();
+  }, [fetchVideoDetails, fetchRelatedVideos]); // Include fetchVideoDetails and fetchRelatedVideos in the dependency array
+
 
   return (
     <div className="flex justify-center flex-row h-[calc(100%-56px)] bg-black">
@@ -64,7 +67,7 @@ const VideoDetails = () => {
                 <div className="flex h-11 w-11 rounded-full overflow-hidden">
                   <img
                     className="h-full w-full object-cover"
-                    src={video?.author?.avatar[0]?.url}
+                    src={video?.author?.avatar[0]?.url} alt="blog"
                   />
                 </div>
               </div>

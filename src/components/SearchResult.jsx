@@ -4,6 +4,7 @@ import { Context } from '../context/contextapi';
 import { fetchDataFromApi } from '../utils/api';
 import { useParams } from 'react-router-dom';
 import SearchResultVideoCard from './SearchResultVideoCard';
+import { useCallback } from 'react';
 
 
 const SearchResult = () => {
@@ -11,19 +12,20 @@ const SearchResult = () => {
   const { searchQuery } = useParams();
   const { setLoading } = useContext(Context);
 
-  useEffect(() => {
-      document.getElementById("root").classList.remove("custom-h");
-      fetchSearchResults();
-  }, [searchQuery]);
 
-  const fetchSearchResults = () => {
-      setLoading(true);
-      fetchDataFromApi(`search/?q=${searchQuery}`).then((res) => {
-          console.log(res);
-          setResult(res?.contents);
-          setLoading(false);
-      });
-  };
+  const fetchSearchResults = useCallback(() => {
+    setLoading(true);
+    fetchDataFromApi(`search/?q=${searchQuery}`).then((res) => {
+      console.log(res);
+      setResult(res?.contents);
+      setLoading(false);
+    });
+  }, [searchQuery, setLoading]);
+
+  useEffect(() => {
+    document.getElementById("root").classList.remove("custom-h");
+    fetchSearchResults(); // Now it's safe to call here
+  }, [fetchSearchResults]);
 
   return (
       <div className="flex flex-row h-[calc(100%-56px)]">
